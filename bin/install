@@ -41,7 +41,7 @@ cd "$TMP_DIR/src"
 
 # Detectar última versão (tag)
 if [ "$VERSION" = "latest" ]; then
-    VERSION=$(git describe --tags --abbrev=0 || echo "master")
+    VERSION=$(git describe --tags --abbrev=0 || echo "main")
     log_info "Última versão detectada: $VERSION"
 fi
 git checkout "$VERSION"
