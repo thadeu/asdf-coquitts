@@ -18,11 +18,19 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Configuração via arquivo TOML
 - Utilitários para desenvolvimento
 - Script de ativação do ambiente virtual
+- Listagem de versões via PyPI
 
 ### Changed
 - Convertido de whisper.cpp para Coqui-TTS
 - Implementação em Python usando a biblioteca oficial
 - Interface simplificada para usuários
+- Instalação via pip em vez de repositório Git
+- Remoção de dependência do Git
+
+### Fixed
+- Erro de checkout de versão inexistente no Git
+- Problemas com tags e branches do repositório
+- Instalação mais robusta e confiável
 
 ### Fixed
 - N/A

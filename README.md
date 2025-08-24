@@ -21,7 +21,7 @@ sudo port install python3
 sudo apt update
 
 # Install Python 3 and pip
-sudo apt install -y python3 python3-pip python3-venv git curl
+sudo apt install -y python3 python3-pip python3-venv curl
 
 # Or install latest Python version
 sudo apt install -y software-properties-common
@@ -33,10 +33,10 @@ sudo apt install -y python3.11 python3.11-pip python3.11-venv
 #### Other Linux distributions
 ```bash
 # Fedora/RHEL/CentOS
-sudo dnf install python3 python3-pip python3-venv git curl
+sudo dnf install python3 python3-pip python3-venv curl
 
 # Arch Linux
-sudo pacman -S python python-pip git curl
+sudo pacman -S python python-pip curl
 ```
 
 ## 🚀 Installation

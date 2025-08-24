@@ -11,7 +11,7 @@ coquitts = { description = "Main Coqui-TTS binary" }
 tts = { description = "User-friendly TTS wrapper" }
 
 [plugin.install]
-requires = ["python3", "pip3", "git"]
+requires = ["python3", "pip3"]
 
 [plugin.install.pre]
 # Verifica se Python está instalado
@@ -19,9 +19,6 @@ check_python = "python3 --version"
 
 # Verifica se pip está instalado
 check_pip = "pip3 --version"
-
-# Verifica se git está instalado  
-check_git = "git --version"
 
 [plugin.install.post]
 # Cria diretórios necessários

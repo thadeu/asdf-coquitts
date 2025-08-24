@@ -1,8 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GH_REPO="coqui-ai/TTS"
+# Lista versões disponíveis do Coqui-TTS no PyPI
+# Usa a API do PyPI para buscar versões
 
-git ls-remote --tags --refs https://github.com/$GH_REPO.git \
-  | cut -d/ -f3 \
-  | sed 's/^v//'
+# Função para fazer requisição HTTP simples
+http_get() {
+    if command -v curl &> /dev/null; then
+        curl -s "$1"
+    elif command -v wget &> /dev/null; then
+        wget -qO- "$1"
+    else
+        echo "ERRO: curl ou wget não encontrado"
+        exit 1
+    fi
+}
+
+# Busca versões no PyPI
+PYPI_URL="https://pypi.org/pypi/TTS/json"
+
+# Faz a requisição e extrai as versões
+if command -v jq &> /dev/null; then
+    # Usa jq se disponível (mais robusto)
+    VERSIONS=$(http_get "$PYPI_URL" | jq -r '.releases | keys[]' 2>/dev/null)
+else
+    # Fallback para grep
+    VERSIONS=$(http_get "$PYPI_URL" | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+fi
+
+# Filtra versões válidas (remove versões de desenvolvimento e pré-releases)
+echo "$VERSIONS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V
+
+# Adiciona "latest" no final
+echo "latest"
