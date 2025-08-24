@@ -89,7 +89,7 @@ VENV_PATH="$(dirname "$0")/../venv"
 source "$VENV_PATH/bin/activate"
 
 # Executa o comando TTS
-exec python -m TTS.cli "$@"
+exec tts "$@"
 EOF
 
 chmod +x "$INSTALL_PATH/bin/coquitts"
@@ -134,7 +134,7 @@ HELP
 
 # Processa argumentos
 ARGS=()
-MODEL="tts_models/multilingual/multi-dataset/xtts_v2"
+MODEL="tts_models/en/ljspeech/tacotron2-DDC"
 LANGUAGE="pt"
 OUTPUT="output.wav"
 SPEAKER=""
@@ -187,9 +187,9 @@ echo ">>> Modelo: $MODEL"
 echo ">>> Saída: $OUTPUT"
 
 if [[ -n "$SPEAKER" ]]; then
-    "$COQUITTS_BIN" --text "$TEXT" --model_name "$MODEL" --out_path "$OUTPUT" --speaker_wav "$SPEAKER" --language "$LANGUAGE"
+    "$COQUITTS_BIN" --text "$TEXT" --model_name "$MODEL" --out_path "$OUTPUT" --speaker_wav "$SPEAKER"
 else
-    "$COQUITTS_BIN" --text "$TEXT" --model_name "$MODEL" --out_path "$OUTPUT" --language "$LANGUAGE"
+    "$COQUITTS_BIN" --text "$TEXT" --model_name "$MODEL" --out_path "$OUTPUT"
 fi
 EOF
 
