@@ -31,6 +31,9 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Erro de checkout de versão inexistente no Git
 - Problemas com tags e branches do repositório
 - Instalação mais robusta e confiável
+- Erro "No module named TTS.cli" - corrigido para usar comando `tts`
+- Modelo padrão alterado para evitar confirmação de licença
+- Wrapper `tts` agora funciona corretamente
 
 ### Fixed
 - N/A

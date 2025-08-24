@@ -205,8 +205,12 @@ tts --list-models
 ```
 
 ### Multilingual models
-- `tts_models/multilingual/multi-dataset/xtts_v2` - XTTS v2 (recommended, ~2.5 GB)
+- `tts_models/multilingual/multi-dataset/xtts_v2` - XTTS v2 (requires license confirmation, ~2.5 GB)
 - `tts_models/multilingual/multi-dataset/your_tts` - YourTTS (~1.8 GB)
+
+### Default models (no license required)
+- `tts_models/en/ljspeech/tacotron2-DDC` - English Tacotron2 (default, ~150 MB)
+- `tts_models/en/ljspeech/fast_pitch` - English FastPitch (~150 MB)
 
 ### Language-specific models
 - `tts_models/pt/cv/vits` - Portuguese (Common Voice, ~200 MB)
