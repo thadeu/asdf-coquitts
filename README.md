@@ -209,7 +209,8 @@ tts --list-models
 - `tts_models/multilingual/multi-dataset/your_tts` - YourTTS (~1.8 GB)
 
 ### Default models (no license required)
-- `tts_models/en/ljspeech/tacotron2-DDC` - English Tacotron2 (default, ~150 MB)
+- `tts_models/pt/cv/vits` - Portuguese VITS (default, ~200 MB, **ultra-fast**)
+- `tts_models/en/ljspeech/tacotron2-DDC` - English Tacotron2 (~150 MB, slower)
 - `tts_models/en/ljspeech/fast_pitch` - English FastPitch (~150 MB)
 
 ### Language-specific models
@@ -385,11 +386,31 @@ ls -la ~/.local/share/mise/installs/coquitts/latest/venv/
 
 ### Performance optimization
 ```bash
+# Use ultra-fast Portuguese VITS model (recommended for PT-BR)
+tts -m tts_models/pt/cv/vits "Texto em português"
+
 # Use faster models for real-time applications
 tts -m tts_models/en/ljspeech/fast_pitch "Fast synthesis"
 
 # Use GPU acceleration (if available)
 # Note: This requires additional setup with CUDA/OpenCL
+export CUDA_VISIBLE_DEVICES=0
+```
+
+### Performance comparison
+| Model | Language | Speed | Quality |
+|-------|----------|-------|---------|
+| `tts_models/pt/cv/vits` | Portuguese | **Ultra-fast** (~0.15s) | High |
+| `tts_models/en/ljspeech/tacotron2-DDC` | English | Slow (~44s) | High |
+| `tts_models/multilingual/multi-dataset/xtts_v2` | Multilingual | Medium | **Highest** |
+
+### Run performance benchmark
+```bash
+# Testa performance de diferentes modelos
+bin/benchmark
+
+# Ou teste manualmente
+time tts -m tts_models/pt/cv/vits "Texto de teste"
 ```
 
 ## 🔄 Using the Python Environment

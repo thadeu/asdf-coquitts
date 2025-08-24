@@ -34,6 +34,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Erro "No module named TTS.cli" - corrigido para usar comando `tts`
 - Modelo padrão alterado para evitar confirmação de licença
 - Wrapper `tts` agora funciona corretamente
+- Performance drasticamente melhorada usando modelo VITS português (~300x mais rápido)
 
 ### Fixed
 - N/A

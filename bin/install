@@ -134,7 +134,7 @@ HELP
 
 # Processa argumentos
 ARGS=()
-MODEL="tts_models/en/ljspeech/tacotron2-DDC"
+MODEL="tts_models/pt/cv/vits"
 LANGUAGE="pt"
 OUTPUT="output.wav"
 SPEAKER=""
