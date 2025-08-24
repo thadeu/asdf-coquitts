@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Importa utilitários
+source "$(dirname "$0")/../lib/utils.bash"
+
+log_info "Verificando compatibilidade do Python com Coqui-TTS..."
+
+# Verifica versão do Python
+PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
+PYTHON_MAJOR_MINOR=$(echo "$PYTHON_VERSION" | cut -d'.' -f1,2)
+
+log_info "Versão do Python: $PYTHON_VERSION ($PYTHON_MAJOR_MINOR)"
+
+# Verifica compatibilidade com diferentes versões do Coqui-TTS
+check_compatibility() {
+    local tts_version="$1"
+    local min_python="$2"
+    local max_python="$3"
+    
+    # Comparação simples de strings para versões Python
+    if [[ "$PYTHON_MAJOR_MINOR" == "$min_python" ]] || \
+       [[ "$PYTHON_MAJOR_MINOR" > "$min_python" && "$PYTHON_MAJOR_MINOR" < "$max_python" ]] || \
+       [[ "$PYTHON_MAJOR_MINOR" == "$max_python" ]]; then
+        log_success "✓ Compatível com TTS $tts_version"
+        return 0
+    else
+        log_warning "✗ Incompatível com TTS $tts_version (requer Python $min_python-$max_python)"
+        return 1
+    fi
+}
+
+# Testa compatibilidade com versões conhecidas
+log_info "Testando compatibilidade:"
+
+check_compatibility "0.22.0" "3.9" "3.11" || true
+check_compatibility "0.23.0" "3.9" "3.13" || true
+check_compatibility "latest" "3.9" "3.13" || true
+
+# Recomendações
+echo ""
+log_info "Recomendações:"
+
+if [ "$(echo "$PYTHON_MAJOR_MINOR >= 3.13" | bc -l 2>/dev/null || echo "0")" = "1" ]; then
+    log_info "Para Python $PYTHON_MAJOR_MINOR, use:"
+    log_info "  mise install coquitts@latest"
+elif [ "$(echo "$PYTHON_MAJOR_MINOR >= 3.9" | bc -l 2>/dev/null || echo "0")" = "1" ]; then
+    log_info "Para Python $PYTHON_MAJOR_MINOR, você pode usar:"
+    log_info "  mise install coquitts@0.22.0"
+    log_info "  mise install coquitts@latest"
+else
+    log_error "Python $PYTHON_MAJOR_MINOR é muito antigo para Coqui-TTS"
+    log_info "Instale Python 3.9 ou superior"
+fi
+
+echo ""
+log_info "Para instalar Python 3.11 (recomendado):"
+log_info "  macOS: brew install python@3.11"
+log_info "  Ubuntu: sudo apt install python3.11"
+log_info "  pyenv: pyenv install 3.11.0"

@@ -9,10 +9,17 @@ Plugin for [asdf](https://asdf-vm.com/) and [mise](https://mise.jdx.dev/) that i
 #### macOS
 ```bash
 # Install Python 3 (required for Coqui-TTS)
+# Note: Coqui-TTS 0.22.0 requires Python 3.9-3.11
+# For Python 3.13+, use latest version
+
+# Install Python 3.11 (recommended)
+brew install python@3.11
+
+# Or install latest Python 3
 brew install python3
 
 # Or via MacPorts
-sudo port install python3
+sudo port install python311
 ```
 
 #### Ubuntu/Debian
@@ -20,14 +27,17 @@ sudo port install python3
 # Update repositories
 sudo apt update
 
-# Install Python 3 and pip
-sudo apt install -y python3 python3-pip python3-venv curl
+# Install Python 3.11 (recommended for Coqui-TTS)
+sudo apt install -y python3.11 python3.11-pip python3.11-venv curl
 
 # Or install latest Python version
 sudo apt install -y software-properties-common
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
 sudo apt install -y python3.11 python3.11-pip python3.11-venv
+
+# Set Python 3.11 as default
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 ```
 
 #### Other Linux distributions
@@ -308,6 +318,23 @@ custom_model_1 = "/path/to/custom/model"
 ```
 
 ## 🐛 Troubleshooting
+
+### Python version compatibility
+```bash
+# Check your Python version
+python3 --version
+
+# Use the compatibility checker
+bin/check-compatibility
+
+# Coqui-TTS version compatibility:
+# - 0.22.0: Python 3.9-3.11
+# - 0.23.0+: Python 3.9-3.13+
+# - Latest: Usually supports newest Python versions
+
+# If you have Python 3.13+ and get compatibility errors:
+mise install coquitts@latest  # Use latest version
+```
 
 ### Python not found
 ```bash

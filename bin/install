@@ -46,9 +46,17 @@ source "$INSTALL_PATH/venv/bin/activate"
 log_info "Atualizando pip..."
 pip install --upgrade pip
 
+# Verifica versão do Python
+PYTHON_VERSION=$(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2)
+log_info "Versão do Python: $PYTHON_VERSION"
+
 # Instala o Coqui-TTS
 if [ "$VERSION" = "latest" ]; then
     log_info "Instalando Coqui-TTS (última versão)..."
+    pip install TTS
+elif [ "$VERSION" = "0.22.0" ] && [ "$(echo "$PYTHON_VERSION >= 3.13" | bc -l 2>/dev/null || echo "0")" = "1" ]; then
+    log_warning "Python $PYTHON_VERSION não é compatível com TTS $VERSION"
+    log_info "Tentando instalar versão mais recente compatível..."
     pip install TTS
 else
     log_info "Instalando Coqui-TTS versão $VERSION..."
@@ -61,6 +69,10 @@ if python -c "import TTS; print('TTS version:', TTS.__version__)" 2>/dev/null; t
     log_success "Coqui-TTS instalado com sucesso!"
 else
     log_error "Falha na instalação do Coqui-TTS"
+    log_info "Possíveis soluções:"
+    log_info "1. Use uma versão mais recente: mise install coquitts@latest"
+    log_info "2. Use Python 3.9-3.11: pyenv install 3.11.0"
+    log_info "3. Instale manualmente: pip install TTS"
     exit 1
 fi
 
