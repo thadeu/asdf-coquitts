@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Importa utilitários
+source "$(dirname "$0")/../lib/utils.bash"
+
+log_info "Testando instalação do Coqui-TTS..."
+
+# Verifica se os binários foram instalados
+INSTALL_PATH="${ASDF_INSTALL_PATH:-${1:-}}"
+if [ -z "$INSTALL_PATH" ]; then
+    log_error "Path de instalação não fornecido"
+    exit 1
+fi
+
+# Testa se os binários existem
+if [ -f "$INSTALL_PATH/bin/coquitts" ]; then
+    log_success "✓ Interface coquitts encontrada"
+else
+    log_error "✗ Interface coquitts não encontrada"
+    exit 1
+fi
+
+if [ -f "$INSTALL_PATH/bin/tts" ]; then
+    log_success "✓ Wrapper tts encontrado"
+else
+    log_error "✗ Wrapper tts não encontrado"
+    exit 1
+fi
+
+if [ -f "$INSTALL_PATH/bin/activate" ]; then
+    log_success "✓ Script de ativação encontrado"
+else
+    log_error "✗ Script de ativação não encontrado"
+    exit 1
+fi
+
+# Testa se os binários são executáveis
+if [ -x "$INSTALL_PATH/bin/coquitts" ]; then
+    log_success "✓ Interface coquitts é executável"
+else
+    log_error "✗ Interface coquitts não é executável"
+    exit 1
+fi
+
+if [ -x "$INSTALL_PATH/bin/tts" ]; then
+    log_success "✓ Wrapper tts é executável"
+else
+    log_error "✗ Wrapper tts não é executável"
+    exit 1
+fi
+
+if [ -x "$INSTALL_PATH/bin/activate" ]; then
+    log_success "✓ Script de ativação é executável"
+else
+    log_error "✗ Script de ativação não é executável"
+    exit 1
+fi
+
+# Testa execução dos binários
+log_info "Testando execução dos binários..."
+
+# Testa ajuda do coquitts
+if "$INSTALL_PATH/bin/coquitts" --help > /dev/null 2>&1; then
+    log_success "✓ Interface coquitts executa corretamente"
+else
+    log_warning "⚠ Interface coquitts pode ter problemas de execução"
+fi
+
+# Testa ajuda do wrapper tts
+if "$INSTALL_PATH/bin/tts" -h > /dev/null 2>&1; then
+    log_success "✓ Wrapper tts executa corretamente"
+else
+    log_warning "⚠ Wrapper tts pode ter problemas de execução"
+fi
+
+# Testa listagem de modelos
+if "$INSTALL_PATH/bin/tts" --list-models > /dev/null 2>&1; then
+    log_success "✓ Listagem de modelos funciona"
+else
+    log_warning "⚠ Listagem de modelos pode ter problemas"
+fi
+
+# Verifica diretórios necessários
+MODEL_DIR="${HOME}/.local/share/mise/coquitts-models"
+CONFIG_DIR="${HOME}/.config/coquitts"
+
+if [ -d "$MODEL_DIR" ]; then
+    log_success "✓ Diretório de modelos criado: $MODEL_DIR"
+else
+    log_warning "⚠ Diretório de modelos não encontrado: $MODEL_DIR"
+fi
+
+if [ -d "$CONFIG_DIR" ]; then
+    log_success "✓ Diretório de configuração criado: $CONFIG_DIR"
+else
+    log_warning "⚠ Diretório de configuração não encontrado: $CONFIG_DIR"
+fi
+
+# Testa permissões de escrita
+if [ -w "$MODEL_DIR" ] 2>/dev/null; then
+    log_success "✓ Permissão de escrita no diretório de modelos"
+else
+    log_warning "⚠ Sem permissão de escrita no diretório de modelos"
+fi
+
+if [ -w "$CONFIG_DIR" ] 2>/dev/null; then
+    log_success "✓ Permissão de escrita no diretório de configuração"
+else
+    log_warning "⚠ Sem permissão de escrita no diretório de configuração"
+fi
+
+# Testa ambiente virtual
+log_info "Testando ambiente virtual..."
+if [ -f "$INSTALL_PATH/venv/bin/activate" ]; then
+    log_success "✓ Ambiente virtual encontrado"
+    
+    # Testa ativação do ambiente
+    if source "$INSTALL_PATH/venv/bin/activate" 2>/dev/null; then
+        log_success "✓ Ambiente virtual pode ser ativado"
+        
+        # Testa importação do TTS
+        if python -c "import TTS; print('TTS version:', TTS.__version__)" 2>/dev/null; then
+            log_success "✓ TTS pode ser importado"
+        else
+            log_warning "⚠ TTS não pode ser importado"
+        fi
+    else
+        log_warning "⚠ Ambiente virtual não pode ser ativado"
+    fi
+else
+    log_warning "⚠ Ambiente virtual não encontrado"
+fi
+
+# Mostra informações de versão
+log_info "Informações de versão:"
+"$INSTALL_PATH/bin/coquitts" --help 2>/dev/null | head -5 || true
+
+log_success "Teste concluído!"
+log_info "Para usar o Coqui-TTS:"
+log_info "  tts 'Olá mundo'"
+log_info "  tts -l en 'Hello world'"
+log_info "  tts --list-models"

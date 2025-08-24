@@ -1,0 +1,227 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Importa utilitários
+source "$(dirname "$0")/../lib/utils.bash"
+
+# Variáveis do plugin
+GH_REPO="coqui-ai/TTS"
+VERSION="latest"
+
+# Path de instalação fornecido pelo asdf/mise
+INSTALL_PATH="${ASDF_INSTALL_PATH:-${1:-}}"
+if [ -z "$INSTALL_PATH" ]; then
+  log_error "nenhum path de instalação fornecido"
+  exit 1
+fi
+
+log_info "Instalando Coqui-TTS (última versão) em $INSTALL_PATH"
+
+# Mostra informações do sistema
+show_system_info
+
+# Verifica dependências
+check_git || exit 1
+check_python || exit 1
+check_pip || exit 1
+check_github_connectivity || exit 1
+
+# Verifica permissões
+check_write_permissions "$INSTALL_PATH" || exit 1
+
+# Cria diretórios
+create_directories "$INSTALL_PATH"
+TMP_DIR=$(mktemp -d)
+setup_cleanup_trap "$TMP_DIR"
+
+# Clona o repositório
+log_info "Clonando $GH_REPO..."
+git clone --depth 1 "https://github.com/$GH_REPO.git" "$TMP_DIR/src"
+cd "$TMP_DIR/src"
+
+# Detectar última versão (tag)
+if [ "$VERSION" = "latest" ]; then
+    VERSION=$(git describe --tags --abbrev=0 || echo "master")
+    log_info "Última versão detectada: $VERSION"
+fi
+git checkout "$VERSION"
+
+# Cria ambiente virtual Python
+log_info "Criando ambiente virtual Python..."
+python3 -m venv "$INSTALL_PATH/venv"
+
+# Ativa o ambiente virtual
+source "$INSTALL_PATH/venv/bin/activate"
+
+# Atualiza pip
+log_info "Atualizando pip..."
+pip install --upgrade pip
+
+# Instala o Coqui-TTS
+log_info "Instalando Coqui-TTS..."
+pip install TTS
+
+# Verifica a instalação
+log_info "Verificando instalação..."
+if python -c "import TTS; print('TTS version:', TTS.__version__)" 2>/dev/null; then
+    log_success "Coqui-TTS instalado com sucesso!"
+else
+    log_error "Falha na instalação do Coqui-TTS"
+    exit 1
+fi
+
+# Cria o wrapper principal
+log_info "Criando wrapper principal..."
+cat > "$INSTALL_PATH/bin/coquitts" << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Path do ambiente virtual
+VENV_PATH="$(dirname "$0")/../venv"
+
+# Ativa o ambiente virtual
+source "$VENV_PATH/bin/activate"
+
+# Executa o comando TTS
+exec python -m TTS.cli "$@"
+EOF
+
+chmod +x "$INSTALL_PATH/bin/coquitts"
+
+# Cria wrapper simplificado
+log_info "Criando wrapper simplificado..."
+cat > "$INSTALL_PATH/bin/tts" << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+COQUITTS_BIN="$(dirname "$0")/coquitts"
+MODEL_DIR="${HOME}/.local/share/mise/coquitts-models"
+mkdir -p "$MODEL_DIR"
+
+# Função para mostrar ajuda
+show_help() {
+    cat << 'HELP'
+Coqui-TTS Wrapper - Text-to-Speech
+
+Uso:
+  tts "texto para converter" [opções]
+  tts -m "modelo" "texto"
+  tts -l pt "texto em português"
+  tts -o audio.wav "texto"
+
+Opções:
+  -m, --model MODEL    Modelo TTS a usar (padrão: xtts_v2)
+  -l, --language LANG  Idioma (padrão: pt)
+  -o, --output FILE    Arquivo de saída (padrão: output.wav)
+  -s, --speaker NAME   Nome do speaker
+  --list-models        Lista modelos disponíveis
+  -h, --help           Mostra esta ajuda
+
+Exemplos:
+  tts "Olá mundo"
+  tts -l en "Hello world"
+  tts -m your_tts -o meu_audio.wav "Texto personalizado"
+  tts --list-models
+
+HELP
+}
+
+# Processa argumentos
+ARGS=()
+MODEL="tts_models/multilingual/multi-dataset/xtts_v2"
+LANGUAGE="pt"
+OUTPUT="output.wav"
+SPEAKER=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -m|--model)
+            MODEL="$2"
+            shift 2
+            ;;
+        -l|--language)
+            LANGUAGE="$2"
+            shift 2
+            ;;
+        -o|--output)
+            OUTPUT="$2"
+            shift 2
+            ;;
+        -s|--speaker)
+            SPEAKER="$2"
+            shift 2
+            ;;
+        --list-models)
+            exec "$COQUITTS_BIN" --list_models
+            ;;
+        *)
+            ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Verifica se há texto para converter
+if [[ ${#ARGS[@]} -eq 0 ]]; then
+    echo "ERRO: Texto é obrigatório"
+    echo "Use: tts 'seu texto aqui'"
+    exit 1
+fi
+
+TEXT="${ARGS[0]}"
+
+# Executa o Coqui-TTS
+echo ">>> Convertendo: '$TEXT'"
+echo ">>> Idioma: $LANGUAGE"
+echo ">>> Modelo: $MODEL"
+echo ">>> Saída: $OUTPUT"
+
+if [[ -n "$SPEAKER" ]]; then
+    "$COQUITTS_BIN" --text "$TEXT" --model_name "$MODEL" --out_path "$OUTPUT" --speaker_wav "$SPEAKER" --language "$LANGUAGE"
+else
+    "$COQUITTS_BIN" --text "$TEXT" --model_name "$MODEL" --out_path "$OUTPUT" --language "$LANGUAGE"
+fi
+EOF
+
+chmod +x "$INSTALL_PATH/bin/tts"
+
+# Cria script de ativação do ambiente
+log_info "Criando script de ativação..."
+cat > "$INSTALL_PATH/bin/activate" << 'EOF'
+#!/usr/bin/env bash
+# Script para ativar o ambiente virtual do Coqui-TTS
+
+VENV_PATH="$(dirname "$0")/../venv"
+
+if [ -f "$VENV_PATH/bin/activate" ]; then
+    source "$VENV_PATH/bin/activate"
+    echo "Ambiente virtual Coqui-TTS ativado"
+    echo "Python: $(which python)"
+    echo "TTS version: $(python -c 'import TTS; print(TTS.__version__)' 2>/dev/null || echo 'N/A')"
+else
+    echo "ERRO: Ambiente virtual não encontrado"
+    exit 1
+fi
+EOF
+
+chmod +x "$INSTALL_PATH/bin/activate"
+
+log_success "Instalação concluída!"
+log_info "Binários instalados:"
+log_info "  - coquitts: Interface completa do Coqui-TTS"
+log_info "  - tts: Wrapper simplificado"
+log_info "  - activate: Ativa o ambiente virtual"
+echo ""
+log_info "Exemplos de uso:"
+log_info "  tts 'Olá mundo'"
+log_info "  tts -l en 'Hello world'"
+log_info "  tts -o meu_audio.wav 'Texto personalizado'"
+log_info "  tts --list-models"
+echo ""
+log_info "Para usar o ambiente virtual diretamente:"
+log_info "  source $INSTALL_PATH/bin/activate"
+log_info "  python -m TTS.cli --text 'teste' --model_name tts_models/multilingual/multi-dataset/xtts_v2"

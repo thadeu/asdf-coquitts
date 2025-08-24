@@ -1,0 +1,55 @@
+# Configuração de exemplo para Coqui-TTS
+# Copie este arquivo para ~/.config/coquitts/config.toml
+
+[defaults]
+# Idioma padrão para síntese de voz
+language = "pt"
+
+# Modelo padrão a ser usado
+model = "tts_models/multilingual/multi-dataset/xtts_v2"
+
+# Diretório padrão para arquivos de saída
+output_dir = "~/Audio"
+
+# Speaker padrão (se o modelo suportar)
+speaker = ""
+
+[models]
+# Configurações específicas por modelo
+[models.xtts_v2]
+name = "tts_models/multilingual/multi-dataset/xtts_v2"
+description = "XTTS v2 - Modelo multilíngue de alta qualidade"
+languages = ["pt", "en", "es", "fr", "de", "it"]
+
+[models.your_tts]
+name = "tts_models/multilingual/multi-dataset/your_tts"
+description = "YourTTS - Modelo de clonagem de voz"
+languages = ["pt", "en", "es", "fr", "de", "it"]
+
+[models.pt_vits]
+name = "tts_models/pt/cv/vits"
+description = "VITS para português (Common Voice)"
+languages = ["pt"]
+
+[models.en_fastpitch]
+name = "tts_models/en/ljspeech/fast_pitch"
+description = "FastPitch para inglês (LJSpeech)"
+languages = ["en"]
+
+[performance]
+# Configurações de performance
+threads = 4
+batch_size = 1
+use_gpu = false
+
+[audio]
+# Configurações de áudio
+sample_rate = 22050
+format = "wav"
+quality = "high"
+
+[paths]
+# Caminhos personalizados
+models_dir = "~/.local/share/mise/coquitts-models"
+cache_dir = "~/.cache/coquitts"
+temp_dir = "/tmp/coquitts"
